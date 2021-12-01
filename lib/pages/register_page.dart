@@ -1,9 +1,13 @@
+import 'package:chat_app/helpers/mostrar_alerta.dart';
 import 'package:chat_app/pages/login_page.dart';
+import 'package:chat_app/pages/usuarios_page.dart';
+import 'package:chat_app/providers/auth_service.dart';
 import 'package:chat_app/widgets/boton_azul.dart';
 import 'package:chat_app/widgets/custom_input.dart';
 import 'package:chat_app/widgets/labels.dart';
 import 'package:chat_app/widgets/logo.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 
 class RegisterPage extends StatelessWidget {
@@ -57,6 +61,9 @@ class __FormWidgetState extends State<_FormWidget> {
 
   @override
   Widget build(BuildContext context) {
+
+    final _authService = Provider.of<AuthService>(context); //Listen en false perque no cal redibuixar el widget
+
     return Container(
       margin: EdgeInsets.only(top: 40),
       padding: EdgeInsets.symmetric(horizontal: 50),
@@ -81,10 +88,19 @@ class __FormWidgetState extends State<_FormWidget> {
             isPassword: true,
           ) ,
           BotonAzul(
-            text: "Ingrese", 
-            onPressed: (){
-              print(_emailController.text);
-              print(_passwordController.text);
+            text: "Crear cuenta", 
+            onPressed: () async{
+
+              FocusScope.of(context).unfocus(); //Per assegurar que treu el focus del teclat      
+              final _registroOk = await _authService.register(_nameController.text.trim(), _emailController.text.trim(), _passwordController.text.trim());
+            
+              if(_registroOk == true){
+                //TODO: Conectar a nuestro socket server
+                Navigator.pushReplacementNamed(context, UsuariosPage.routeName);
+              }
+              else{
+                mostrarAlerta(context, "Registro incorrecto", _registroOk);
+              }
             }
           )
         ]

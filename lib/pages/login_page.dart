@@ -1,9 +1,13 @@
+import 'package:chat_app/helpers/mostrar_alerta.dart';
 import 'package:chat_app/pages/register_page.dart';
+import 'package:chat_app/pages/usuarios_page.dart';
+import 'package:chat_app/providers/auth_service.dart';
 import 'package:chat_app/widgets/boton_azul.dart';
 import 'package:chat_app/widgets/custom_input.dart';
 import 'package:chat_app/widgets/labels.dart';
 import 'package:chat_app/widgets/logo.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 
 class LoginPage extends StatelessWidget {
@@ -53,9 +57,13 @@ class __FormWidgetState extends State<_FormWidget> {
 
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  
 
   @override
   Widget build(BuildContext context) {
+
+    final _authService = Provider.of<AuthService>(context); //Listen en false perque no cal redibuixar el widget
+
     return Container(
       margin: EdgeInsets.only(top: 40),
       padding: EdgeInsets.symmetric(horizontal: 50),
@@ -75,9 +83,17 @@ class __FormWidgetState extends State<_FormWidget> {
           ) ,
           BotonAzul(
             text: "Ingrese", 
-            onPressed: (){
-              print(_emailController.text);
-              print(_passwordController.text);
+            onPressed: _authService.autenticando ? null : () async{  
+              FocusScope.of(context).unfocus(); //Per assegurar que treu el focus del teclat      
+              final _loginOk = await _authService.login(_emailController.text.trim(), _passwordController.text.trim());
+            
+              if(_loginOk){
+                //TODO: Conectar a nuestro socket server
+                Navigator.pushReplacementNamed(context, UsuariosPage.routeName);
+              }
+              else{
+                mostrarAlerta(context, "Login incorrecto", "Revise sus credenciales nuevamente");
+              }
             }
           )
         ]
